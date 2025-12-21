@@ -20,7 +20,7 @@ class MenuHelper
             [
                 'icon' => 'gear',
                 'name' => 'Maps',
-                'path' => '/maps',
+                'path' => '/map',
             ],
             [
                 'icon' => 'gear',
@@ -28,7 +28,7 @@ class MenuHelper
                 'subItems' => [
                     ['name' => 'Pengguna', 'path' => '/users'],
                     ['name' => 'Role', 'path' => '/roles'],
-                    ['name' => 'Permission', 'path' => '/permissions'],
+                    ['name' => 'Permission', 'path' => route('permissions.index')],
                 ]
             ],
             [

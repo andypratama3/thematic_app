@@ -2,9 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\DataSetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PermissionController;
 
 Route::get('/', function () {
     return view('pages.dashboard.index');
@@ -16,15 +19,15 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function () {
     Route::resource('datasets', DataSetController::class);
     Route::get('datasets/template/download', [DataSetController::class, 'downloadTemplate'])->name('datasets.template');
 
-    Route::get('maps', [MapController::class, 'index'])->name('maps.index');
+    Route::get('map', [MapController::class, 'index'])->name('maps.index');
     Route::get('maps/api/points', [MapController::class, 'getTransactionPoints'])->name('maps.api.points');
     Route::get('maps/api/boundaries', [MapController::class, 'getBoundaries'])->name('maps.api.boundaries');
     Route::get('maps/api/statistics', [MapController::class, 'getStatistics'])->name('maps.api.statistics');
 
     Route::group(['prefix' => 'settings'], function () {
-        Route::resource('users', App\Http\Controllers\UserController::class);
-        Route::resource('roles', App\Http\Controllers\RoleController::class);
-        Route::resource('permissions', App\Http\Controllers\PermissionController::class);
+        Route::resource('users', UserController::class);
+        Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class);
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
