@@ -22,5 +22,9 @@ class UserSeeder extends Seeder
             'email' => 'superadmin@superadmin.com',
             'password' => bcrypt('superadmin'),
         ]);
+
+        $role = Role::where('name', 'superadmin')->first();
+
+        $user->assignRole($role);
     }
 }

@@ -2,6 +2,35 @@
 
 @section('content')
 
+@push('styles')
+<style>
+    .modal.modal-show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .modal.modal-show .modal-backdrop {
+        opacity: 1;
+    }
+
+    .modal.modal-show .modal-panel {
+        opacity: 1;
+        transform: scale(1) translate-y(0);
+    }
+
+    /* Close animation */
+    .modal.modal-hide .modal-panel {
+        transform: scale(0.95) translate-y(1rem);
+        opacity: 0;
+    }
+
+    .modal.modal-hide .modal-backdrop {
+        opacity: 0;
+    }
+
+</style>
+@endpush
+
 <x-common.page-breadcrumb pageTitle="Data Set" />
 
 <div class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
@@ -25,13 +54,15 @@
                         </svg>
                         <span>Download Template</span>
                     </a>
-                    <button onclick="document.getElementById('importModal').classList.remove('hidden')"
+                    <button onclick="openImportModal()"
                             class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-blue-500/30">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         <span>Tambah Dataset</span>
                     </button>
+
+
                 </div>
             </div>
 
@@ -147,7 +178,7 @@
                         Lihat Peta
                     </a>
                     <div class="flex gap-2">
-                        <button class="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                        <button class="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
                             OCR
                         </button>
                         <form action="{{ route('datasets.destroy', $dataset) }}" method="POST" class="flex-1">
@@ -172,112 +203,156 @@
 </div>
 
 {{-- Import Modal --}}
-<div id="importModal" class="hidden fixed inset-0 flex items-center justify-center p-5 overflow-y-auto modal z-99999">
-    <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]" onclick="document.getElementById('importModal').classList.add('hidden')"></div>
+<div id="importModal"
+    class="fixed inset-0 z-99999 flex items-center justify-center p-5 overflow-y-auto modal hidden opacity-0 pointer-events-none transition-all duration-300 ease-out">
 
-    <div class="relative w-full max-w-[584px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
-        {{-- Close Button --}}
-        <button onclick="document.getElementById('importModal').classList.add('hidden')" class="group absolute right-3 top-3 z-999 flex h-9.5 w-9.5 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 hover:text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-200 sm:right-6 sm:top-6 sm:h-11 sm:w-11">
-            <svg class="transition-colors fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z" fill=""></path>
-            </svg>
-        </button>
+    <div class="modal-backdrop fixed inset-0 bg-gray-400/50 backdrop-blur-[32px]
+                opacity-0 transition-opacity duration-300" onclick="closeImportModal()"></div>
 
-        <form action="{{ route('datasets.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+    <div class="modal-panel relative w-full max-w-[584px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10
+                transform scale-95 translate-y-6 opacity-0
+                transition-all duration-300 ease-out">
+        <div class="relative w-full max-w-[584px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+            {{-- Close Button --}}
+            <button onclick="document.getElementById('importModal').classList.add('hidden')"
+                class="group absolute right-3 top-3 z-999 flex h-9.5 w-9.5 items-center justify-center rounded-full bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 hover:text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-200 sm:right-6 sm:top-6 sm:h-11 sm:w-11">
+                <svg class="transition-colors fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z"
+                        fill=""></path>
+                </svg>
+            </button>
 
-            <h4 class="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
-                Import Dataset Baru
-            </h4>
+            <form action="{{ route('datasets.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-            <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-                {{-- Dataset Name --}}
-                <div class="col-span-1 sm:col-span-2">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Nama Dataset <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="name" required placeholder="Penyaluran Pupuk Bersubsidi" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
-                </div>
+                <h4 class="mb-6 text-lg font-medium text-gray-800 dark:text-white/90">
+                    Import Dataset Baru
+                </h4>
 
-                {{-- Description --}}
-                <div class="col-span-1 sm:col-span-2">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Deskripsi
-                    </label>
-                    <textarea name="description" rows="3" placeholder="Jelaskan isi dan tujuan dataset ini..." class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800 resize-none"></textarea>
-                </div>
-
-                {{-- Type --}}
-                <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tipe Dataset <span class="text-red-500">*</span>
-                    </label>
-                    <select name="type" required class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
-                        <option value="">Pilih Tipe</option>
-                        <option value="fertilizer">Pupuk</option>
-                        <option value="farmer">Petani</option>
-                        <option value="transaction">Transaksi</option>
-                        <option value="custom">Kustom</option>
-                    </select>
-                </div>
-
-                {{-- Year --}}
-                <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Tahun <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="year" value="{{ date('Y') }}" min="2000" max="2100" required class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
-                </div>
-
-                {{-- Month --}}
-                <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Bulan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="month" value="{{ date('m') }}" min="1" max="12" required class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
-                </div>
-
-                {{-- File Upload --}}
-                <div class="col-span-1 sm:col-span-2">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        Upload File <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative group">
-                        <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" required class="hidden" onchange="handleFileSelect(this)">
-                        <label for="fileInput" class="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-                            <div class="text-center">
-                                <svg class="mx-auto h-10 w-10 text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                </svg>
-                                <p class="text-gray-700 dark:text-gray-300 text-sm font-medium mb-0.5">
-                                    <span class="text-blue-600 dark:text-blue-400">Klik untuk unggah</span> atau seret file
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    XLSX, XLS, CSV (maks 10MB)
-                                </p>
-                                <p id="fileName" class="text-xs text-gray-500 dark:text-gray-500 mt-1 font-medium">
-                                    File belum dipilih
-                                </p>
-                            </div>
+                <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                    {{-- Dataset Name --}}
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Nama Dataset <span class="text-red-500">*</span>
                         </label>
+                        <input type="text" name="name" required placeholder="Penyaluran Pupuk Bersubsidi"
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
+                    </div>
+
+                    {{-- Description --}}
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Deskripsi
+                        </label>
+                        <textarea name="description" rows="3" placeholder="Jelaskan isi dan tujuan dataset ini..."
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800 resize-none"></textarea>
+                    </div>
+
+                    {{-- Type --}}
+                    <div class="col-span-1">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Tipe Dataset <span class="text-red-500">*</span>
+                        </label>
+                        <select name="type" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
+                            <option value="">Pilih Tipe</option>
+                            <option value="fertilizer">Pupuk</option>
+                            <option value="farmer">Petani</option>
+                            <option value="transaction">Transaksi</option>
+                            <option value="custom">Kustom</option>
+                        </select>
+                    </div>
+
+                    {{-- Year --}}
+                    <div class="col-span-1">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Tahun <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="year" value="{{ date('Y') }}" min="2000" max="2100" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
+                    </div>
+
+                    {{-- Month --}}
+                    <div class="col-span-1">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Bulan <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="month" value="{{ date('m') }}" min="1" max="12" required
+                            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-blue-300 focus:outline-hidden focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800">
+                    </div>
+
+                    {{-- File Upload --}}
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="mb-1.5 block text-sm font-medium dark:text-white">
+                            Upload File <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative group">
+                            <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" required
+                                class="hidden" onchange="handleFileSelect(this)">
+                            <label for="fileInput"
+                                class="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 transition-colors cursor-pointer p-2 dark:hover:bg-white/[0.02]">
+                                <div class="text-center p-2">
+                                    <svg class="mx-auto h-10 w-10 text-gray-400 dark:text-white mb-2" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p class="dark:text-white text-sm font-medium mb-0.5">
+                                        <span class="text-blue-600 dark:text-blue-400">Klik untuk unggah</span> atau
+                                        seret file
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-white">
+                                        XLSX, XLS, CSV (maks 10MB)
+                                    </p>
+                                    <p id="fileName" class="text-xs text-gray-500 dark:text-white mt-1 font-medium">
+                                        File belum dipilih
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- Action Buttons --}}
-            <div class="flex items-center justify-end w-full gap-3 mt-6">
-                <button onclick="document.getElementById('importModal').classList.add('hidden')" type="button" class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs transition-colors hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:w-auto">
-                    Batal
-                </button>
-                <button type="submit" class="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-blue-600 shadow-theme-xs hover:bg-blue-700 sm:w-auto transition-colors">
-                    Import Dataset
-                </button>
-            </div>
-        </form>
+                {{-- Action Buttons --}}
+                <div class="flex items-center justify-end w-full gap-3 mt-6">
+                    <button onclick="document.getElementById('importModal').classList.add('hidden')" type="button"
+                        class="flex w-full justify-center rounded-lg border dark:text-white border-gray-300 bg-white px-4 py-3 text-sm font-medium shadow-theme-xs transition-colors hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 sm:w-auto">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="flex justify-center w-full px-4 py-3 text-sm font-medium dark:text-white rounded-lg bg-blue-600 shadow-theme-xs hover:bg-blue-700 sm:w-auto transition-colors">
+                        Import Dataset
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+
+</div>
 </div>
 
+@push('scripts')
+
 <script>
+    function openImportModal() {
+        const modal = document.getElementById('importModal');
+        modal.classList.remove('hidden', 'modal-hide');
+        modal.offsetHeight; // force repaint
+        modal.classList.add('modal-show');
+    }
+
+    function closeImportModal() {
+        const modal = document.getElementById('importModal');
+        modal.classList.remove('modal-show');
+        modal.classList.add('modal-hide');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('modal-hide');
+        }, 300);
+    }
     // File upload handling
     function handleFileSelect(input) {
         const fileName = input.files[0]?.name || 'File belum dipilih';
@@ -331,5 +406,6 @@
         }
     });
 </script>
+@endpush
 
 @endsection
