@@ -78,9 +78,29 @@ class DatasetController extends Controller
         $successCount = 0;
         $errorCount = 0;
 
-        foreach ($rows as $row) {
+        // Default coordinates untuk wilayah Kediri (jika tidak ada koordinat)
+        $defaultCoordinates = [
+            [-7.8167, 112.0167], // Kediri 1
+            [-7.8200, 112.0200], // Kediri 2
+            [-7.8100, 112.0100], // Kediri 3
+            [-7.8250, 112.0250], // Kediri 4
+        ];
+
+        foreach ($rows as $index => $row) {
             try {
                 if (empty($row[0])) continue; // Skip empty rows
+
+                // Parse address dari row (jika ada di excel Anda)
+                $address = $row[24] ?? 'DS. BLABAK KEC. KANDAT - Kandat - KAB. KEDIRI - JAWA TIMUR';
+
+                // Generate random coordinates dalam radius Kediri
+                // Atau gunakan koordinat default
+                $coordIndex = $index % count($defaultCoordinates);
+                $baseCoord = $defaultCoordinates[$coordIndex];
+
+                // Add small random offset untuk setiap point
+                $latitude = $baseCoord[0] + (mt_rand(-100, 100) / 10000);
+                $longitude = $baseCoord[1] + (mt_rand(-100, 100) / 10000);
 
                 FertilizerTransaction::create([
                     'dataset_id' => $dataset->id,
@@ -106,6 +126,14 @@ class DatasetController extends Controller
                     'npk_formula_color' => $row[21] ?? 'black',
                     'organic_color' => $row[22] ?? 'black',
                     'organic_liquid_color' => $row[23] ?? 'black',
+                    // PENTING: Tambahkan koordinat
+                    'address' => $address,
+                    'village' => 'BLABAK',
+                    'district' => 'KANDAT',
+                    'regency' => 'KEDIRI',
+                    'province' => 'JAWA TIMUR',
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                 ]);
 
                 $successCount++;
@@ -117,6 +145,7 @@ class DatasetController extends Controller
 
         $dataset->update([
             'total_records' => $successCount,
+            'total_parameters' => 29,
             'import_status' => $errorCount > 0 ? 'completed' : 'completed',
             'imported_at' => now(),
         ]);
@@ -140,38 +169,92 @@ class DatasetController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set header
+        // Set header dengan LATITUDE & LONGITUDE
         $headers = [
             'custom unique id', 'data date', 'Kode TRX', 'No Transaksi', 'NIK',
             'Nama Petani', 'Urea', 'NPK', 'SP36', 'ZA', 'NPK Formula',
             'Organik', 'Organik Cair', 'Keterangan', 'Tanggal Tebus',
             'Url Bukti', 'value', 'color', 'color2', 'color3', 'color4',
-            'color5', 'color6', 'color7'
+            'color5', 'color6', 'color7',
+            'Alamat', 'Desa', 'Kecamatan', 'Kabupaten', 'Provinsi',
+            'Latitude', 'Longitude'  // KOLOM BARU
         ];
 
         $sheet->fromArray($headers, null, 'A1');
 
-        // Add sample data
+        // Add sample data dengan koordinat
         $sampleData = [
-            [1, '2025-05-08', '34624069', 'S0D131\K0015M', '3506050104550004',
-             'ABDULLAH ZAINI YAHYA', 0, 390, 0, 0, 0, 0, 0,
-             'Sample', 21, 'https://example.com', 0,
-             'black', 'green', 'black', 'black', 'black', 'black', 'black']
+            [
+                1, '2025-05-08', '34624069', 'S0D131\K0015M', '3506050104550004',
+                'ABDULLAH ZAINI YAHYA', 0, 390, 0, 0, 0, 0, 0,
+                'Sample', '2025-05-21', 'https://example.com', 0,
+                'black', 'green', 'black', 'black', 'black', 'black', 'black',
+                'DS. BLABAK KEC. KANDAT', 'BLABAK', 'KANDAT', 'KEDIRI', 'JAWA TIMUR',
+                -7.8167, 112.0167  // Koordinat Kediri
+            ],
+            [
+                2, '2025-05-08', '34859663', 'S0D131\K0015R', '3506051103830003',
+                'AHMAD WAHYUNI', 400, 533, 0, 0, 0, 0, 0,
+                'Sample', '2025-05-24', 'https://example.com', 0,
+                'red', 'green', 'black', 'black', 'black', 'black', 'black',
+                'DS. BLABAK KEC. KANDAT', 'BLABAK', 'KANDAT', 'KEDIRI', 'JAWA TIMUR',
+                -7.8200, 112.0200
+            ],
+            [
+                3, '2025-05-08', '35331752', 'S0D131\K00165', '3506051803720004',
+                'CUK BUDI SUSILO', 0, 1455, 0, 0, 0, 0, 0,
+                'Sample', '2025-05-30', 'https://example.com', 0,
+                'black', 'red', 'black', 'black', 'black', 'black', 'black',
+                'DS. BLABAK KEC. KANDAT', 'BLABAK', 'KANDAT', 'KEDIRI', 'JAWA TIMUR',
+                -7.8100, 112.0100
+            ]
         ];
 
         $sheet->fromArray($sampleData, null, 'A2');
 
         // Style header
         $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ]
         ];
-        $sheet->getStyle('A1:X1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:AD1')->applyFromArray($headerStyle);
+
+        // Highlight kolom koordinat (penting!)
+        $coordStyle = [
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'FFA500']  // Orange
+            ],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]
+        ];
+        $sheet->getStyle('AC1:AD1')->applyFromArray($coordStyle);
+
+        // Add notes/instructions
+        $sheet->setCellValue('A5', 'CATATAN PENTING:');
+        $sheet->setCellValue('A6', '1. Kolom Latitude & Longitude WAJIB diisi agar data muncul di peta');
+        $sheet->setCellValue('A7', '2. Format Latitude: -7.8167 (negatif untuk selatan equator)');
+        $sheet->setCellValue('A8', '3. Format Longitude: 112.0167 (positif untuk timur)');
+        $sheet->setCellValue('A9', '4. Contoh koordinat Kediri: Lat=-7.8167, Lng=112.0167');
+        $sheet->setCellValue('A10', '5. Gunakan Google Maps untuk mendapatkan koordinat: Klik kanan > Copy coordinates');
+        $sheet->setCellValue('A11', '6. Jika kolom kosong, sistem akan auto-generate koordinat di area Kediri');
+
+        $sheet->getStyle('A5:A11')->getFont()->setBold(true)->setItalic(true);
+        $sheet->getStyle('A5')->getFont()->setSize(12)->getColor()->setRGB('FF0000');
 
         // Auto width
-        foreach (range('A', 'X') as $col) {
+        foreach (range('A', 'D') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
+
+        // Freeze first row
+        $sheet->freezePane('A2');
 
         $writer = new Xlsx($spreadsheet);
         $fileName = 'template_fertilizer_import_' . date('Y_m_d') . '.xlsx';

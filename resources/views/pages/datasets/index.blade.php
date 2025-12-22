@@ -43,7 +43,7 @@
                         Dataset Builder
                     </h1>
                     <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                        Kelola dan import dataset GIS Anda dengan mudah
+                        Kelola dan import dataset GIS
                     </p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -109,7 +109,7 @@
                     <div class="flex items-start justify-between mb-5">
                         <div class="flex items-center gap-4 flex-1">
                             <div class="w-14 h-14 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
-                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-7 h-7 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>
                             </div>
@@ -118,7 +118,7 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $dataset->slug }}</p>
                             </div>
                         </div>
-                        <button class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors">
+                        <button class="text-gray-400 dark:text-gray-500 font-medium font-black font-bold hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
                             </svg>
@@ -132,12 +132,12 @@
 
                     {{-- Stats Grid --}}
                     <div class="grid grid-cols-2 gap-3 mb-5">
-                        <div class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-3 text-center">
+                        <div class="dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg p-3 text-center">
                             <div class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Total Record</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">{{ number_format($dataset->total_records ?? 0) }}</div>
                         </div>
                         <div class="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20 rounded-lg p-3 text-center">
-                            <div class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">Parameter</div>
+                            <div class="text-xs dark:text-white font-medium text-purple-600 dark:text-purple-400 mb-1">Parameter</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $dataset->total_parameters ?? 0 }}</div>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                                 </span>
                             @endif
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        <div class="text-xs text-gray-500 dark:text-white font-medium">
                             {{ $dataset->imported_at ? $dataset->imported_at->diffForHumans() : 'Belum diimpor' }}
                         </div>
                     </div>
@@ -177,10 +177,10 @@
                         </svg>
                         Lihat Peta
                     </a>
-                    <div class="flex gap-2">
-                        <button class="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                    <div class="flex gap-2 pb-3 mb-2">
+                        {{-- <button class="flex-1 px-4 py-2 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
                             OCR
-                        </button>
+                        </button> --}}
                         <form action="{{ route('datasets.destroy', $dataset) }}" method="POST" class="flex-1">
                             @csrf @method('DELETE')
                             <button type="submit"

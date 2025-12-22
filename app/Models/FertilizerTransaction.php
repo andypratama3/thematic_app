@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,3 +48,4 @@ class FertilizerTransaction extends Model
                $this->npk_formula + $this->organic + $this->organic_liquid;
     }
 }
+

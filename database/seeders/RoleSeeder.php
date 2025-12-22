@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -25,9 +26,9 @@ class RoleSeeder extends Seeder
 
         $roleSuperadmin = Role::where('name', 'superadmin')->first();
 
-        $roleSuperadmin->attachPermissions(Permission::all());
+        $roleSuperadmin->syncPermissions(Permission::all());
 
-        
+
 
     }
 }

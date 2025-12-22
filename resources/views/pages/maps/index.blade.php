@@ -268,6 +268,46 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
+    /* Heatmap Legend */
+    .heatmap-legend {
+        background: rgba(55, 65, 81, 0.6);
+        border: 1px solid rgba(107, 114, 128, 0.3);
+        border-radius: 8px;
+        padding: 14px;
+        margin-top: 12px;
+        display: none;
+    }
+
+    .heatmap-legend.active {
+        display: block;
+    }
+
+    .heatmap-legend h4 {
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .heatmap-gradient {
+        width: 100%;
+        height: 30px;
+        background: linear-gradient(to right, #0000ff, #00ff00, #ffff00, #ff8800, #ff0000);
+        border-radius: 4px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .heatmap-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #9ca3af;
+        font-weight: 600;
+    }
+
     /* Statistics Panel */
     .stats-panel {
         position: absolute;
@@ -476,10 +516,6 @@
                                 <input type="checkbox" id="boundaryToggle" checked>
                                 <label for="boundaryToggle">Tampilkan Batas Wilayah</label>
                             </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="heatmapToggle">
-                                <label for="heatmapToggle">Mode Heatmap</label>
-                            </div>
                         </div>
                     </div>
 
@@ -524,8 +560,8 @@
                         </div>
                     </div>
 
-                    <div class="legend">
-                        <h4>Legenda</h4>
+                    <div class="legend" id="markerLegend">
+                        <h4>Legenda Marker</h4>
                         <div class="legend-item">
                             <div class="legend-dot" style="background: #ef4444;"></div>
                             <span>Penggunaan Tinggi (>500kg)</span>
@@ -538,6 +574,21 @@
                             <div class="legend-dot" style="background: #10b981;"></div>
                             <span>Rendah (<200kg)</span>
                         </div>
+                    </div>
+
+                    <div class="heatmap-legend" id="heatmapLegend">
+                        <h4>🔥 Legenda Heatmap</h4>
+                        <div class="heatmap-gradient"></div>
+                        <div class="heatmap-labels">
+                            <span>Rendah</span>
+                            <span>Sedang</span>
+                            <span>Tinggi</span>
+                        </div>
+                        <p style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                            🔵 Biru = Konsentrasi rendah<br>
+                            🟢 Hijau = Konsentrasi sedang<br>
+                            🔴 Merah = Konsentrasi tinggi
+                        </p>
                     </div>
                 </div>
             </div>
@@ -582,8 +633,49 @@
 </div>
 
 @push('scripts')
+<!-- ========== CRITICAL: Load in correct order ========== -->
+<!-- 1. Leaflet core -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- 2. Marker cluster -->
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<!-- 3. HEATMAP LIBRARY (MUST be before index.js) -->
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+<!-- 4. Your custom map code (LAST) -->
 <script src="{{ asset('maps/index.js') }}"></script>
+
+<!-- 5. Legend toggle script -->
+<script>
+    // Wait for DOM ready and heatmap library to load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if L.heatLayer is available
+        if (typeof L === 'undefined' || typeof L.heatLayer === 'undefined') {
+            console.warn('⚠️ Heatmap library not loaded properly');
+        } else {
+            console.log('✅ Heatmap library loaded successfully');
+        }
+
+        // Toggle heatmap legend visibility
+        const heatmapToggle = document.getElementById('heatmapToggle');
+        const markerLegend = document.getElementById('markerLegend');
+        const heatmapLegend = document.getElementById('heatmapLegend');
+
+        if (heatmapToggle) {
+            heatmapToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    markerLegend.style.display = 'none';
+                    heatmapLegend.classList.add('active');
+                    console.log('🔥 Heatmap legend shown');
+                } else {
+                    markerLegend.style.display = 'block';
+                    heatmapLegend.classList.remove('active');
+                    console.log('📍 Marker legend shown');
+                }
+            });
+        }
+    });
+</script>
 @endpush
 @endsection

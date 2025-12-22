@@ -36,7 +36,11 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "app/Helpers/GeoHelper.php",
+            "app/Helpers/ColorHelper.php"
+        ]
     },
     "scripts": {
         "post-autoload-dump": [

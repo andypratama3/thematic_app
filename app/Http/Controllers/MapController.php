@@ -106,28 +106,32 @@ class MapController extends Controller
 
     public function getStatistics(Request $request)
     {
-        $query = FertilizerTransaction::query();
+        // Build base query dengan filters
+        $baseQuery = FertilizerTransaction::query();
 
         if ($request->dataset_id) {
-            $query->where('dataset_id', $request->dataset_id);
+            $baseQuery->where('dataset_id', $request->dataset_id);
         }
 
         if ($request->year) {
-            $query->whereYear('transaction_date', $request->year);
+            $baseQuery->whereYear('transaction_date', $request->year);
         }
 
         if ($request->month) {
-            $query->whereMonth('transaction_date', $request->month);
+            $baseQuery->whereMonth('transaction_date', $request->month);
         }
 
+        // Clone query untuk setiap perhitungan agar independent
         $stats = [
-            'total_transactions' => $query->count(),
-            'total_farmers' => $query->distinct('nik')->count(),
-            'total_urea' => $query->sum('urea'),
-            'total_npk' => $query->sum('npk'),
-            'total_sp36' => $query->sum('sp36'),
-            'total_za' => $query->sum('za'),
-            'total_all' => $query->sum(DB::raw('urea + npk + sp36 + za + npk_formula + organic + organic_liquid')),
+            'total_transactions' => $baseQuery->clone()->count(),
+            'total_farmers' => $baseQuery->clone()->distinct('nik')->count(),
+            'total_urea' => $baseQuery->clone()->sum('urea') ?? 0,
+            'total_npk' => $baseQuery->clone()->sum('npk') ?? 0,
+            'total_sp36' => $baseQuery->clone()->sum('sp36') ?? 0,
+            'total_za' => $baseQuery->clone()->sum('za') ?? 0,
+            'total_all' => $baseQuery->clone()->sum(
+                DB::raw('COALESCE(urea, 0) + COALESCE(npk, 0) + COALESCE(sp36, 0) + COALESCE(za, 0) + COALESCE(npk_formula, 0) + COALESCE(organic, 0) + COALESCE(organic_liquid, 0)')
+            ) ?? 0,
         ];
 
         return response()->json($stats);
