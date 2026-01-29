@@ -35,8 +35,8 @@ class DatasetController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:fertilizer,farmer,transaction,custom',
-            'year' => 'required|integer|min:2000|max:2100',
-            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required',
+            'month' => 'required',
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
 
@@ -62,6 +62,7 @@ class DatasetController extends Controller
             return redirect()->route('datasets.index')->with('success', 'Dataset berhasil diimport!');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', 'Import gagal: ' . $e->getMessage());
         }
     }
@@ -269,7 +270,6 @@ class DatasetController extends Controller
 
     public function destroy(Dataset $dataset)
     {
-        $this->authorize('delete', $dataset);
 
         $dataset->delete();
         return redirect()->route('datasets.index')->with('success', 'Dataset berhasil dihapus!');

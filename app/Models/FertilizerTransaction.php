@@ -44,8 +44,16 @@ class FertilizerTransaction extends Model
 
     public function getTotalFertilizerAttribute()
     {
-        return $this->urea + $this->npk + $this->sp36 + $this->za +
-               $this->npk_formula + $this->organic + $this->organic_liquid;
+        return collect([
+            $this->urea,
+            $this->npk,
+            $this->sp36,
+            $this->za,
+            $this->npk_formula,
+            $this->organic,
+            $this->organic_liquid,
+        ])->sum();
+
     }
 }
 
